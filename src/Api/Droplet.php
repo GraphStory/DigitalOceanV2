@@ -22,6 +22,9 @@ use DigitalOceanV2\Entity\Upgrade as UpgradeEntity;
  */
 class Droplet extends AbstractApi
 {
+
+    const DEFAULT_PER_PAGE = 1000;
+
     /**
      * @return DropletEntity[]
      */
@@ -29,7 +32,7 @@ class Droplet extends AbstractApi
     {
         $thereAreNewResults = true;
         $results = [];
-        $url = sprintf('%s/droplets?per_page=%d', self::ENDPOINT, PHP_INT_MAX);
+        $url = sprintf('%s/droplets?per_page=%d', self::ENDPOINT, self::DEFAULT_PER_PAGE);
         while ($thereAreNewResults) {
             $thereAreNewResults = false;
             $droplets = $this->adapter->get($url);
