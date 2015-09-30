@@ -22,19 +22,32 @@ use DigitalOceanV2\Entity\Upgrade as UpgradeEntity;
  */
 class Droplet extends AbstractApi
 {
+
+    const DEFAULT_PER_PAGE = 1000;
+
     /**
      * @return DropletEntity[]
      */
     public function getAll()
     {
-        $droplets = $this->adapter->get(sprintf('%s/droplets?per_page=%d', self::ENDPOINT, PHP_INT_MAX));
-        $droplets = json_decode($droplets);
-
-        $this->extractMeta($droplets);
-
-        return array_map(function ($droplet) {
+        $thereAreNewResults = true;
+        $results = [];
+        $url = sprintf('%s/droplets?per_page=%d', self::ENDPOINT, self::DEFAULT_PER_PAGE);
+        while ($thereAreNewResults) {
+            $thereAreNewResults = false;
+            $droplets = $this->adapter->get($url);
+            $droplets = json_decode($droplets);
+            $results = array_merge($results, $droplets->droplets);
+            if (!empty($droplets->links->pages->next)) {
+                $url = $droplets->links->pages->next;
+                $thereAreNewResults = true;
+            }
+        }
+        $curr = array_map(function ($droplet) {
             return new DropletEntity($droplet);
-        }, $droplets->droplets);
+        }, $results);
+
+        return $curr;
     }
 
     /**
